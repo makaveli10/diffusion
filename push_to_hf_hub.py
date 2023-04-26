@@ -1,7 +1,7 @@
 import argparse
 from huggingface_hub import login, create_repo, HfApi
 
-login(token="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")
+login(token="YOUR_ACCESS_TOKEN")
 api = HfApi()
 def push(repo_id, local_dir):
     create_repo(repo_id, private=False, exist_ok=True)
