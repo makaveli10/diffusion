@@ -17,7 +17,8 @@ import os,base64
 
 __all__ = ["load_model", "generate",
            "plt", "torch", "load_civit_ckpt", 
-           "convert_civit_lora_safetensors_to_diffusers"]
+           "convert_civit_lora_safetensors_to_diffusers",
+           "load_civit_textual_inversion_checkpoint"]
 
 
 def convert_civit_lora_safetensors_to_diffusers(
@@ -104,7 +105,22 @@ def convert_civit_lora_safetensors_to_diffusers(
     return pipeline
 
 
-def load_civit_ckpt(ckpt_link_or_path, model_name):
+def load_civit_textual_inversion_checkpoint(model, ckpt_link_or_path, ckpt_name, textual_inv_dir='textual_inversion'):
+    """
+    """
+    os.makedirs(textual_inv_dir, exist_ok=True)
+    if not ckpt_name.endswith('.pt'):
+        ckpt_name = ckpt_name+'.pt'
+    
+    if not os.path.exists(os.path.join(f'{textual_inv_dir}/{ckpt_name}')):
+        # download ckpt
+
+        cmd = f"wget -q -O {textual_inv_dir}/{ckpt_name} {ckpt_link_or_path}"
+        os.system(cmd)
+    model.load_textual_inversion(textual_inv_dir+'/'+ckpt_name)
+    return model
+
+def load_civit_ckpt(ckpt_link_or_path, model_name, model_type="safetensors", civit_models_dir='civit_models'):
     """
     Loads a Civitai checkpoint into a stable diffusion pipeline.
 
@@ -115,12 +131,21 @@ def load_civit_ckpt(ckpt_link_or_path, model_name):
     Returns:
         StableDiffusionPipeline object.
     """
+    # check if path exists
+    os.makedirs(civit_models_dir, exist_ok=True)
+    if not os.path.exists(f'{civit_models_dir}/{model_name}.{model_type}'):
+        # download file
+        cmd = f"wget -q -O {civit_models_dir}/{model_name}.{model_type} {ckpt_link_or_path}"
+        os.system(cmd)
+    
     pipe = StableDiffusionPipeline.from_ckpt(
-        ckpt_link_or_path,
+        f'{civit_models_dir}/{model_name}.{model_type}',
         torch_dtype=torch.float16
     )
+    
     pipe.to("cuda")
     pipe.modeldir = model_name
+    
     return pipe
 
 
@@ -129,7 +154,8 @@ def load_model(model_id):
     pipe.modeldir = model_id
     return pipe
 
-def generate(model_id, prompt, negative_prompt=None, seed=31337, steps=50, N=9, w=512, h=512, guidance_scale=9):
+
+def generate(model_id, prompt, negative_prompt=None, seed=31337, steps=50, N=9, w=512, h=512, guidance_scale=9, upscale=False):
     generators = [torch.Generator(device="cuda").manual_seed(seed + i*512) for i in range(N)]
     if isinstance(model_id, str):
         pipe = DiffusionPipeline.from_pretrained(model_id, custom_pipeline="lpw_stable_diffusion.py", torch_dtype=torch.float16).to("cuda")
@@ -153,8 +179,18 @@ def generate(model_id, prompt, negative_prompt=None, seed=31337, steps=50, N=9, 
             guidance_scale = guidance_scale,
         ), f)
     img_paths = [dirname/f'{i}.jpg' for i in range(N)]
-    for img,path in zip(images, img_paths): img.save(path)
+    upscaled_img_paths = [f'{i}.png' for i in range(N)]
+    for img,path in zip(images, img_paths): 
+        img.save(path)
+        if upscale:
+            cmd = f"python CodeFormer/inference_codeformer.py -w 0.7 --input_path {path} --bg_upsampler realesrgan --face_upsample -w 1.0 -o {dirname}"
+            os.system(cmd)
+
     del pipe
+
+    if upscale:
+        print(['\n'.join(f"{dirname}/final_results/{path}" for path in upscaled_img_paths)])
+        return HTML(''.join([f'<img style="float:left; width: 32%; margin:5px;" src="{dirname}/final_results/{path}" />' for path in upscaled_img_paths]))
     return HTML(''.join([f'<img style="float:left; width: 32%; margin:5px;" src="{path}" />' for path in img_paths]))
 
 from IPython.display import HTML
