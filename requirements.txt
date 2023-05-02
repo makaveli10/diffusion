@@ -5,3 +5,4 @@ accelerate
 matplotlib
 safetensors
 omegaconf
+ipython
