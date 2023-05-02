@@ -6,3 +6,4 @@ matplotlib
 safetensors
 omegaconf
 ipython
+bitsandbytes
