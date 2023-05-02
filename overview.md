@@ -20,7 +20,7 @@ This repository contains several notebooks that implement various diffusion mode
 <p align="center">
     <img src="./samples/dreambake/something_beautiful.png" width="300" >
     <img src="./samples/dreambake/silence.png" width="300" >
-    <img src="./samples/deliberate/goth_building.png" width="300" >
+    <img src="./samples/dreambake/model_oil_painting.png" width="300" >
 </p>
 <figcaption align = "center"><b>Dreambake model sample images.</b></figcaption>
 </figure>
