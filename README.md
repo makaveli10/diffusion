@@ -9,7 +9,17 @@
 
 - To easily load civit checkpoints, install the git version of diffusers
 ```bash
- git clone https://github.com/huggingface/diffusers.git
- cd diffusers
- pip install -e ".[torch]"
+ pip install git+https://github.com/huggingface/diffusers
 ```
+
+## Docker
+- Pull the pre-built docker image
+```bash
+ docker pull ghcr.io/makaveli10/hello-diffusion:latest
+```
+
+- Build your custom docker image
+```bash
+ docker build . -t hello-diffusion
+```
+
