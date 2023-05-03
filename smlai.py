@@ -33,11 +33,13 @@ def convert_civit_lora_safetensors_to_diffusers(
     to_safetensors=False
     ):
     os.makedirs('civit_lora_models', exist_ok=True)
+    model_id=dump_path
     save_path = 'civit_lora_models/' + dump_path + '.safetensors'
     dump_path = 'civit_lora_models/' + dump_path
     if os.path.exists(dump_path):
         print("Model already exists loading ...")
         pipeline = load_model(dump_path)
+        pipeline.modeldir = model_id
         return pipeline
     else:
         # download model
@@ -109,6 +111,7 @@ def convert_civit_lora_safetensors_to_diffusers(
         for item in pair_keys:
             visited.append(item)
     pipeline = pipeline.to(device)
+    pipeline.modeldir = model_id
     pipeline.save_pretrained(dump_path, safe_serialization=to_safetensors)
     return pipeline
 
