@@ -32,10 +32,18 @@ def convert_civit_lora_safetensors_to_diffusers(
     device="cuda:0",
     to_safetensors=False
     ):
+    os.makedirs('civit_lora_models', exist_ok=True)
+    save_path = 'civit_lora_models/' + dump_path + '.safetensors'
+    dump_path = 'civit_lora_models/' + dump_path
     if os.path.exists(dump_path):
         print("Model already exists loading ...")
         pipeline = load_model(dump_path)
-        return model
+        return pipeline
+    else:
+        # download model
+        print("Downloading checkpoint ...")
+        cmd = f"wget -q -O {save_path} {checkpoint_path}"
+        os.system(cmd)
     
     if from_ckpt:
         pipeline = StableDiffusionPipeline.from_ckpt(base_model_path, torch_dtype=torch.float32)
@@ -44,7 +52,7 @@ def convert_civit_lora_safetensors_to_diffusers(
         pipeline = StableDiffusionPipeline.from_pretrained(base_model_path, torch_dtype=torch.float32)
 
     # load LoRA weight from .safetensors
-    state_dict = load_file(checkpoint_path)
+    state_dict = load_file(save_path)
 
     visited = []
 
@@ -107,6 +115,7 @@ def convert_civit_lora_safetensors_to_diffusers(
 
 def load_civit_textual_inversion_checkpoint(model, ckpt_link_or_path, ckpt_name, textual_inv_dir='textual_inversion'):
     """
+    Downloads and loads the civit textual inversion checkpoint from the given link.
     """
     os.makedirs(textual_inv_dir, exist_ok=True)
     if not ckpt_name.endswith('.pt'):
@@ -114,7 +123,7 @@ def load_civit_textual_inversion_checkpoint(model, ckpt_link_or_path, ckpt_name,
     
     if not os.path.exists(os.path.join(f'{textual_inv_dir}/{ckpt_name}')):
         # download ckpt
-
+        print("Downloading checkpoint ...")
         cmd = f"wget -q -O {textual_inv_dir}/{ckpt_name} {ckpt_link_or_path}"
         os.system(cmd)
     model.load_textual_inversion(textual_inv_dir+'/'+ckpt_name)
@@ -135,6 +144,7 @@ def load_civit_ckpt(ckpt_link_or_path, model_name, model_type="safetensors", civ
     os.makedirs(civit_models_dir, exist_ok=True)
     if not os.path.exists(f'{civit_models_dir}/{model_name}.{model_type}'):
         # download file
+        print("Downloading checkpoint ...")
         cmd = f"wget -q -O {civit_models_dir}/{model_name}.{model_type} {ckpt_link_or_path}"
         os.system(cmd)
     
@@ -189,7 +199,6 @@ def generate(model_id, prompt, negative_prompt=None, seed=31337, steps=50, N=9, 
     del pipe
 
     if upscale:
-        print(['\n'.join(f"{dirname}/final_results/{path}" for path in upscaled_img_paths)])
         return HTML(''.join([f'<img style="float:left; width: 32%; margin:5px;" src="{dirname}/final_results/{path}" />' for path in upscaled_img_paths]))
     return HTML(''.join([f'<img style="float:left; width: 32%; margin:5px;" src="{path}" />' for path in img_paths]))
 
