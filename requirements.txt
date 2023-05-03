@@ -6,3 +6,4 @@ omegaconf
 ipython
 notebook
 scipy==1.8
+bitsandbytes
