@@ -23,3 +23,5 @@
  docker build . -t hello-diffusion
 ```
 
+## Notebooks
+Already have an idea about the kind of image you want to paint? Have a look at the [Overview](https://github.com/makaveli10/diffusion/blob/main/overview.md) which details the models we have pre-loaded.
