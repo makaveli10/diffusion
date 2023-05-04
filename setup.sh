@@ -7,9 +7,6 @@ apt install wget
 pip install -r requirements.txt
 pip install git+https://github.com/huggingface/diffusers
 
-# dirty hack to make bitsandbytes work on cuda
-cp /opt/conda/lib/python3.10/site-packages/bitsandbytes/libbitsandbytes_cuda116.so /opt/conda/lib/python3.10/site-packages/bitsandbytes/libbitsandbytes_cpu.so
-
 # codeformer setup
 git clone https://github.com/sczhou/CodeFormer
 cd CodeFormer
