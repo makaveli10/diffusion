@@ -15,7 +15,7 @@ git clone https://github.com/sczhou/CodeFormer
 cd CodeFormer
 pip install -r requirements.txt
 python basicsr/setup.py develop
-pip install dlib
+# pip install dlib
 python scripts/download_pretrained_models.py facelib
 cd ..
 python CodeFormer/scripts/download_pretrained_models.py CodeFormer
