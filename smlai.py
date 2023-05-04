@@ -196,6 +196,8 @@ def generate(model_id, prompt, negative_prompt=None, seed=31337, steps=50, N=9, 
     for img,path in zip(images, img_paths): 
         img.save(path)
         if upscale:
+            # to remove diffusion model cache and have memory to run codeformer
+            torch.cuda.empty_cache()
             cmd = f"python CodeFormer/inference_codeformer.py -w 0.7 --input_path {path} --bg_upsampler realesrgan --face_upsample -w 1.0 -o {dirname}"
             os.system(cmd)
 
